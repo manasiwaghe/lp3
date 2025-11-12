@@ -108,9 +108,32 @@
 ///dp
 #include <iostream>
 #include <vector>
+#include <cstring>
 using namespace std;
 
-int knapsack(int W, vector<int> wt, vector<int> val, int n) {
+int knapsackMemo(int W, vector<int>& wt, vector<int>& val, int n, vector<vector<int>>& dp) {
+    // Base condition
+    if (n == 0 || W == 0)
+        return 0;
+
+    // If already computed, return the stored result
+    if (dp[n][W] != -1)
+        return dp[n][W];
+
+    // Choice diagram
+    if (wt[n - 1] <= W) {
+        // Include or exclude the item
+        dp[n][W] = max(val[n - 1] + knapsackMemo(W - wt[n - 1], wt, val, n - 1, dp),
+                       knapsackMemo(W, wt, val, n - 1, dp));
+    } else {
+        // Item cannot be included
+        dp[n][W] = knapsackMemo(W, wt, val, n - 1, dp);
+    }
+
+    return dp[n][W];
+}
+
+int knapsackTab(int W, vector<int>& wt, vector<int>& val, int n) {
     vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
 
     for (int i = 1; i <= n; i++) {
@@ -131,6 +154,14 @@ int main() {
     int W = 7;
     int n = value.size();
 
-    cout << "Maximum value: " << knapsack(W, weight, value, n) << endl;
+    // Memoization
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, -1));
+    cout << "Maximum value using Memoization: " 
+         << knapsackMemo(W, weight, value, n, dp) << endl;
+
+    // Tabulation
+    cout << "Maximum value using Tabulation: " 
+         << knapsackTab(W, weight, value, n) << endl;
+
     return 0;
 }
